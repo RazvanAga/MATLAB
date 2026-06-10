@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MATLAB MCP — Live Agentic Demo</title>
+  <link rel="stylesheet" href="/vendor/highlight-theme.css" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <img class="logo" src="/Schaeffler_logo.svg.png" alt="Schaeffler" />
+    <div class="title-block">
+      <h1>MATLAB&nbsp;/&nbsp;Simulink MCP</h1>
+      <p class="subtitle">internal demo tool — a chatbot that drives MATLAB/Simulink live via MCP</p>
+    </div>
+  </header>
+
+  <main id="timeline" class="timeline" aria-live="polite">
+    <div id="empty-state" class="empty-state">
+      <p>Send a message to drive the tool chain. Each step appears as a card: the
+      agent's decision, the tool call, and the result.</p>
+    </div>
+  </main>
+
+  <form id="composer" class="composer" autocomplete="off">
+    <input id="message" name="message" type="text"
+           placeholder="Type a message and press Enter…" required />
+    <button id="send" type="submit">Send</button>
+  </form>
+
+  <script src="/vendor/marked.min.js"></script>
+  <script src="/vendor/highlight.min.js"></script>
+  <script src="/vendor/matlab.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

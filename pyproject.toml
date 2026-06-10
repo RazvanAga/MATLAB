@@ -1,0 +1,27 @@
+[project]
+name = "matlab-mcp-demo"
+version = "0.1.0"
+description = "Local chatbot that drives MATLAB/Simulink via MCP — live agentic demo backend"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "sse-starlette>=2.1",
+    "anthropic[mcp]>=0.69",
+    "mcp>=1.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.27",
+    "anyio>=4.6",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.uv]
+package = false
