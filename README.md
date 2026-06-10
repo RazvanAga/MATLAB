@@ -62,18 +62,24 @@ This starts MATLAB's connector service and writes a fresh `sessionDetails.json` 
 
 > ⚠️ This is **not** `matlab.engine.shareEngine` — that's a different, unrelated mechanism the Core Server ignores. Use `shareMATLABSession` (from the MATLAB MCP Core Server Toolbox). If you skip this or run the wrong one, the backend fails at startup with `MATLAB preflight returned an error: failed to attach to MATLAB session` (a stale `sessionDetails.json` pointing at a dead session). Re-run `shareMATLABSession` to fix.
 
-**2. Start the backend.** In **PowerShell**, from the repo root:
+**2. Launch the demo (recommended).** In **PowerShell**, from the repo root:
 
 ```powershell
 cd C:\Users\Razvan\Projects\MATLAB
+.\run-demo.ps1
+```
+
+`run-demo.ps1` is the pre-flight launcher. It runs instant local checks (Core Server binary, Simulink tools manifest, **a live `shareMATLABSession` registration — it verifies the registered MATLAB process is actually running, catching a missing or stale registration in milliseconds**, and the figures folder), then starts the backend, waits for the MATLAB preflight to pass, and opens the browser. If anything is wrong — most commonly MATLAB not shared — it **fails loudly with a clear message before the browser opens**, instead of starting in a broken state. Backend logs go to `.run/`. Press **Ctrl+C** to stop. Flags: `-NoBrowser`, `-Port <n>`.
+
+**Manual alternative.** To start the backend yourself:
+
+```powershell
 uv run uvicorn backend.app:app
 ```
 
-On startup the backend launches the real Core Server (`--matlab-session-mode=existing`, strict) and runs a MATLAB preflight ping. Wait for `Application startup complete`. (First run in a fresh clone also triggers `uv` to install dependencies.)
+On startup the backend launches the real Core Server (`--matlab-session-mode=existing`, strict) and runs a MATLAB preflight ping. Wait for `Application startup complete`, then open <http://127.0.0.1:8000>. (First run in a fresh clone also triggers `uv` to install dependencies; for local development, add `--reload` to pick up code edits automatically.)
 
-**3. Open the UI** at <http://127.0.0.1:8000> and click **Step 1**, or type a message. Watch the MATLAB window execute alongside the chat.
-
-For local development, add `--reload` to pick up code edits automatically.
+**3. Use the UI** at <http://127.0.0.1:8000> — click **Step 1**, or type a message. Watch the MATLAB window execute alongside the chat.
 
 ### Run without MATLAB (chain/UI only)
 

@@ -15,3 +15,6 @@ slprj/
 
 # Agent-exported figures (watched + streamed inline, not source)
 figures/
+
+# Backend launch logs from run-demo.ps1
+.run/

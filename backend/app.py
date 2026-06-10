@@ -141,5 +141,18 @@ async def stream(request: Request, message: str, model: str = agent.DEFAULT_MODE
     return EventSourceResponse(event_generator())
 
 
+@app.get("/api/health")
+async def health():
+    """Readiness probe for the launcher (run-demo.ps1).
+
+    FastAPI only starts serving requests once lifespan startup has finished, and
+    in production that includes ``_preflight_matlab`` (the real engine attach +
+    eval). So a 200 here means more than "web server up": it proves the Core
+    Server attached to the shared MATLAB and the preflight passed. If the
+    preflight raises, startup aborts and this route never answers — which is
+    exactly the signal the launcher polls for."""
+    return {"status": "ok"}
+
+
 # Static frontend (registered last so /api/* wins). html=True serves index.html at /.
 app.mount("/", StaticFiles(directory=str(PUBLIC_DIR), html=True), name="public")
