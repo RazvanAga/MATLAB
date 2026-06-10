@@ -1,8 +1,8 @@
-# PRD v2 — Live AI Demo: Chatbot care conduce MATLAB/Simulink prin MCP
+# PRD — Live AI Demo: Chatbot care conduce MATLAB/Simulink prin MCP
 
-> Schaeffler | Interviu pentru rolul *AI-Enhanced MBD Specialist* (echipa PMT) | Status: spec înghețat post-grill, gata de implementare
+> Schaeffler | Interviu pentru rolul *AI-Enhanced MBD Specialist* (echipa PMT) | Status: spec înghețat, gata de implementare
 >
-> Acest document înlocuiește planul inițial ([matlab-ai-demo-PRD.md](matlab-ai-demo-PRD.md)) cu deciziile rezolvate într-o sesiune de grill. Corecțiile majore față de v1: **MATLAB Engine for Python iese complet** (core server-ul e binar standalone), **sesiune vizibilă în loc de headless**, **Simulink prin toolkit-ul oficial**, și o **secțiune UI completă** care nu exista în v1.
+> Decizii arhitecturale cheie: MATLAB MCP Core Server e **binar Go standalone** (fără MATLAB Engine for Python), MATLAB rulează **vizibil** (sesiune `existing`), Simulink prin **Simulink Agentic Toolkit**, frontend custom cu **carduri timeline**.
 
 ---
 
@@ -17,6 +17,24 @@ Interviul e **online, pe Microsoft Teams, cu screen-share** — deci tot ce ară
 Un chatbot local care conduce live o instanță reală de MATLAB R2026a / Simulink prin Model Context Protocol — exact stack-ul (Claude + MCP) pe care MathWorks l-a lansat oficial (core server nov. 2025) și pe care îl folosesc zilnic. În loc să *vorbesc* despre AI workflows, **arăt unul rulând**: scriu în limbaj natural, agentul decide, cheamă tool-uri MCP care execută cod în MATLAB-ul real, iar rezultatele (output numeric + figuri) apar live în chat.
 
 **Teza:** *„Nu vin să învăț AI workflows. Le construiesc deja. Iată unul care rulează pe MATLAB, acum."* Criteriul suprem: percepția trece de la „candidat cu MATLAB limitat" la „omul care poate ateriza partea de AI".
+
+### Două artefacte, două axe (nu concurează)
+Demonstrația finală constă din **două piese complementare**, pe axe diferite:
+
+- **Web app-ul (acest PRD)** — prototipul unui *produs intern*: un asistent dedicat, cu suprafață îngustă de tool-uri, prompturi curate, guardrails și UI cu butoane, pe care un inginer de suport l-ar folosi fără IDE. Demonstrează că pot *construi* infrastructura agentică (FastAPI + MCP + tool_runner + SSE + UI), nu doar s-o consum — diferențiatorul pentru rolul „AI-Enhanced MBD Specialist".
+- **Workflow-ul VSCode + Claude/Copilot + MATLAB MCP** (artefact separat, spec-uit ulterior) — *workflow-ul real de dezvoltare* pe care echipa l-ar adopta de mâine. Harness matur, efort mic, ancoră fiabilă.
+
+**Ordine de construcție:** web app **întâi** (acest document), apoi workflow-ul VSCode.
+**Ordine de prezentare (recomandată):** VSCode **întâi** ca ancoră sigură care aterizează ideea de bază („așa dezvoltăm modele"), apoi web app-ul ca diferențiator („și uite ce pot construi pe deasupra pentru echipă"). Dacă riscul forțează o tăiere live, VSCode e minimul garantat; web app-ul e piesa cu impact maxim dar mai fragilă.
+
+> Acest PRD acoperă **doar web app-ul**. Workflow-ul VSCode va primi un spec separat, mai ușor, după ce web app-ul e gata.
+
+### Criterii de succes
+- **S1 — Fiabilitate live:** rulează end-to-end fără crash; 3 rulări consecutive reușite la repetiție.
+- **S2 — MATLAB real:** agentul conduce MATLAB-ul real (nu mock) și întoarce output numeric + figură generată live.
+- **S3 — Pas agentic vizibil:** UI-ul afișează fiecare decizie → tool call → rezultat.
+- **S4 — Explicabilitate:** pot explica orice piesă din arhitectură la întrebări.
+- **S5 — Setup reproductibil:** mediul se reface pe laptopul meu urmând checklist-ul de pre-flight.
 
 ## User Stories
 
@@ -51,8 +69,8 @@ Un chatbot local care conduce live o instanță reală de MATLAB R2026a / Simuli
 ## Implementation Decisions
 
 ### Arhitectură & mediu
-- **Lanțul real (corectat față de v1):** Browser (chat) ⇄ SSE ⇄ FastAPI ⇄ Anthropic SDK (`tool_runner`) ⇄ MCP `ClientSession` (stdio) ⇄ **MATLAB MCP Core Server (binar Go standalone)** ⇄ MATLAB R2026a/Simulink. **NU există strat „MATLAB Engine for Python"** — core server-ul nu îl folosește.
-- **Backend Python 3.13** (constrângerea Engine-for-Python din v1 a dispărut; `anthropic[mcp]` cere doar 3.10+).
+- **Lanțul:** Browser (chat) ⇄ SSE ⇄ FastAPI ⇄ Anthropic SDK (`tool_runner`) ⇄ MCP `ClientSession` (stdio) ⇄ **MATLAB MCP Core Server (binar Go standalone)** ⇄ MATLAB R2026a/Simulink. **NU există strat „MATLAB Engine for Python"** — core server-ul nu îl folosește.
+- **Backend Python 3.13** (`anthropic[mcp]` cere doar 3.10+; nicio constrângere de Engine-for-Python, fiindcă core server-ul e binar standalone).
 - **MATLAB rulează vizibil**, sesiune `--matlab-session-mode existing` **strict** (eșuează zgomotos dacă nu găsește sesiunea — evită pornirea unei sesiuni noi invizibile în care „dispare" figura). MATLAB-ul tău deschis trebuie pus pe `matlab.engine.shareEngine`.
 - **Install unic:** `simulink-agentic-toolkit` (`.mltbx` → `setupAgenticToolkit("install")`), care descarcă automat și MATLAB MCP Core Server în `~/.matlab/agentic-toolkits/`. Acoperă ambele dependențe într-un pas.
 - **Model:** `claude-opus-4-8`, `effort: medium` + adaptive thinking. Fallback testat: `claude-sonnet-4-6` (o linie de cod), decis la repetiție dacă latența opus deranjează.
@@ -60,11 +78,11 @@ Un chatbot local care conduce live o instanță reală de MATLAB R2026a / Simuli
 
 ### Bucla agentică & streaming
 - **`client.beta.messages.tool_runner()`** cu tool-uri MCP convertite din `anthropic.lib.tools.mcp`, peste `stdio_client` → `ClientSession`. Granularitate **per-mesaj** (confirmat de doc: tool runner-ul Python întoarce mesaje complete) — exact ce vrem pentru a face vizibil pasul agentic.
-- **Wrapper propriu peste fiecare tool MCP** ca punct unic de instrumentare: emite eveniment SSE „tool_use start" → cheamă tool-ul MCP → emite „tool_result" + verifică folderul de figuri → întoarce rezultatul runner-ului. Același choke-point servește SSE-ul (F5/S3) ȘI detecția figurilor.
+- **Wrapper propriu peste fiecare tool MCP** ca punct unic de instrumentare: emite eveniment SSE „tool_use start" → cheamă tool-ul MCP → emite „tool_result" + verifică folderul de figuri → întoarce rezultatul runner-ului. Același choke-point servește streaming-ul SSE (vizibilitatea pasului agentic, S3) ȘI detecția figurilor.
 - **Figuri:** system prompt-ul cere `exportgraphics(gcf, fullfile("<cale absolută>", sprintf("fig_%s.png", datestr(now,"HHMMSSFFF"))))`; backend-ul face **watch pe folder** și emite pe SSE (base64) orice PNG nou apărut după un `tool_result`. Decuplat de numele exact, fără re-afișarea figurilor vechi.
 - **Stare workspace (hibrid):** follow-up-urile folosesc variabilele existente dacă există, dar system prompt-ul instruiește agentul să re-ruleze simularea dacă nu le găsește. Demonstrează continuitatea „aceleași date" fără să cadă dacă un apel anterior a eșuat. (De validat la F2 că modul `existing` nu curăță base workspace-ul între apeluri.)
 
-### Tool-uri & comportament agent (F6 — system prompt focusat)
+### Tool-uri & comportament agent (system prompt focusat)
 - **Suprafață de tool-uri restrânsă:** din cele ~12 disponibile (5 core + 7 Simulink), agentul primește doar submulțimea de demo (`evaluate_matlab_code`, `check_matlab_code`, tool-urile Simulink de read/sim).
 - **System prompt focusat (nu agresiv** — opus-4-8 urmează literal și narează mult): instrucțiunea de export figuri, ghidarea selecției de tool-uri, guardrail read-only Simulink / fără operații distructive, re-derivarea defensivă a workspace-ului.
 - **Skills-urile toolkit-ului (9 markdown) NU se auto-încarcă** în harness-ul custom — sunt pentru agenți cu suport de filesystem. Dacă vrem „expertiza" lor, o injectăm manual în system prompt.
@@ -72,7 +90,7 @@ Un chatbot local care conduce live o instanță reală de MATLAB R2026a / Simuli
 
 ### Simulink
 - Folosim **Simulink Agentic Toolkit complet** (7 tool-uri MCP dedicate + skills), dar în demo arătăm **doar read + simulate** (deschide model → `sim` → citește semnalul) — păstrăm narațiunea ISO 26262 read-only, deși toolkit-ul are și capabilități de scriere pe care alegem să nu le folosim.
-- **`demo.slx`:** **același sistem mass-spring-damper** ca în demo 1, dar ca bloc-diagramă (continuitate narativă „aceeași fizică, acum ca MBD"). Semnal logat explicit cu bloc **To Workspace** → trivial de citit, nu depinde de structura `out.yout`.
+- **`demo.slx`:** **același sistem mass-spring-damper** ca în primul prompt MATLAB, dar ca bloc-diagramă (continuitate narativă „aceeași fizică, acum ca MBD"). Semnal logat explicit cu bloc **To Workspace** → trivial de citit, nu depinde de structura `out.yout`.
 
 ### Frontend (UI)
 - **Tech:** vanilla HTML/JS, fără build step. **highlight.js** (cod) + **marked** (markdown text agent) **vendate local** — zero CDN, fără dependență de internet în afară de API-ul Anthropic.
@@ -94,7 +112,7 @@ Un chatbot local care conduce live o instanță reală de MATLAB R2026a / Simuli
 
 ## Testing Decisions
 
-### Seam-ul principal de testare: Mock MCP (promovat de la „Should" la **Must**)
+### Seam-ul principal de testare: Mock MCP (**Must**)
 Cel mai înalt seam din sistem. Un server MCP fals (stdio) cu un tool `echo` permite validarea **întregului lanț** (browser → FastAPI → SSE → tool_runner → wrapper → UI carduri) **fără MATLAB**. Dacă lanțul merge cu mock-ul, singura necunoscută rămasă e binarul real — izolăm riscul devreme. Acesta e și pivotul fazei F1.
 
 ### Ce face un test bun aici
@@ -118,31 +136,31 @@ Greenfield — nu există cod încă. Testele backend-ului urmează patternul st
 - Rularea pe instanța MATLAB a firmei — rulăm pe laptopul meu; conectarea la instanța lor o menționez ca opțiune viitoare.
 - Integrare cu Polarion/Jira/AWS Bedrock — menționate verbal ca viziune.
 - Branding complet cu logo Schaeffler proeminent — folosim doar accent discret, pentru a evita aerul prezumțios și riscul de folosire neautorizată a mărcii.
+- **Workflow-ul VSCode + agent + MATLAB MCP** — artefact separat (Demo 1 în prezentare), spec-uit ulterior după ce web app-ul e gata. Acest PRD nu îl acoperă; vezi §Solution → „Două artefacte".
 
 ## Further Notes
 
-### Faze & milestone-uri (actualizate)
+### Faze & milestone-uri
 - **F0 — Prerechizite:** install `simulink-agentic-toolkit` (aduce și core server-ul) + `ant auth login` + construiește `demo.slx` (mass-spring-damper cu To Workspace) + verifică toolbox-urile cu `detect_matlab_toolboxes`.
 - **F1 — Schelet end-to-end + Mock MCP (Must):** FastAPI + UI cu carduri timeline + SSE + tool_runner + wrapper, validate cu Mock MCP `echo`. **Fără MATLAB.** Criteriu: un mesaj din browser → agentul cheamă `echo` → cardul apare „running" apoi se umple, prin SSE.
 - **F2 — MATLAB live:** core server real, `existing` strict, validează persistența workspace + promptul mass-spring-damper rulează și întoarce output.
 - **F3 — Wow factor:** figuri inline (wrapper + watch + lightbox) + demo Simulink read/sim pe `demo.slx` + `check_matlab_code` ca beat vizibil.
-- **F4 (opțional):** standarde de cod explicite în F6, polish UI, streaming token-cu-token.
+- **F4 (opțional):** standarde de cod explicite în system prompt, polish UI, streaming token-cu-token.
 
-### Riscuri & mitigări (rescrise)
+### Riscuri & mitigări
 | Risc | Impact | Mitigare |
 |------|--------|----------|
-| ~~Engine for Python incompatibil~~ | — | **Eliminat:** core server-ul e binar standalone, nu folosește Engine for Python. |
 | Install toolkit eșuează | Blocant F2 | F1 cu Mock MCP elimină dependența până e gata; testez `.mltbx` izolat înainte. |
 | Demo live pică | Catastrofal (S1) | Mock MCP izolează riscul; repet 3x; înregistrare video + screenshot de rezervă. |
 | 50/50 pe Teams ilizibil | Slăbește S3/S1 | Font MATLAB mărit, carduri în coloană îngustă, test pe apel Teams de probă. |
 | Latență opus-4-8 mare | Slăbește impactul | Fallback sonnet-4-6; effort medium; model Simulink mic; prompturi scurte. |
 | Workspace curățat între apeluri | Cade follow-up-ul | Re-derivare defensivă în system prompt (hibrid). |
 | `existing` nu prinde sesiunea | Figura „dispare" | Mod strict (eșec zgomotos la pre-flight) + pas `shareEngine` în checklist. |
-| Cod arbitrar nedorit | Risc de imagine | Demo scriptat, butoane fixe; guardrail read-only/no-destructive în F6. |
+| Cod arbitrar nedorit | Risc de imagine | Demo scriptat, butoane fixe; guardrail read-only/no-destructive în system prompt. |
 | Confidențialitate IP | Obiecție la firmă auto | Argument pregătit: core server local, codul nu părăsește rețeaua. |
 
 ### De definit înainte de build (verificări, nu decizii de design)
 - Textul precis al celor 3 prompturi scriptate + promptul „extra sigur".
-- Conținutul exact al system prompt-ului (F6).
+- Conținutul exact al system prompt-ului.
 - Structura scriptului de pre-flight.
 - Lista exactă de toolbox-uri cerute de `demo.slx`.
