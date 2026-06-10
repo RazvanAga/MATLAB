@@ -70,16 +70,26 @@ function scrollToEnd() {
   timeline.scrollTop = timeline.scrollHeight;
 }
 
+// True when the viewport is already pinned near the latest card. Measured
+// BEFORE inserting new content so we only auto-follow when the user hasn't
+// scrolled up to read — a new event then never jerks them back to the bottom.
+function isNearBottom() {
+  const slack = 120; // px tolerance for "at the bottom"
+  return timeline.scrollHeight - timeline.scrollTop - timeline.clientHeight < slack;
+}
+
 function renderAgentText(text) {
+  const stick = isNearBottom();
   clearEmptyState();
   const el = document.createElement("div");
   el.className = "agent-text";
   el.innerHTML = marked.parse(text);
   timeline.appendChild(el);
-  scrollToEnd();
+  if (stick) scrollToEnd();
 }
 
 function renderToolUse({ id, name, input }) {
+  const stick = isNearBottom();
   clearEmptyState();
   const card = document.createElement("div");
   card.className = "tool-card running";
@@ -99,28 +109,30 @@ function renderToolUse({ id, name, input }) {
 
   const result = document.createElement("div");
   result.className = "tool-result";
-  result.textContent = "running in MATLAB…";
+  result.textContent = "rulează în MATLAB…";
 
   card.append(head, pre, result);
   timeline.appendChild(card);
   cards.set(id, card);
   if (window.hljs) hljs.highlightElement(code);
-  scrollToEnd();
+  if (stick) scrollToEnd();
 }
 
 function renderToolResult({ id, output, is_error }) {
   const card = cards.get(id);
   if (!card) return;
+  const stick = isNearBottom();
   card.classList.remove("running");
   const spinner = card.querySelector(".spinner");
   if (spinner) spinner.remove();
   const result = card.querySelector(".tool-result");
   result.textContent = output || "(no output)";
   if (is_error) result.style.color = "var(--error)";
-  scrollToEnd();
+  if (stick) scrollToEnd();
 }
 
 function renderFigure({ id, name, mime, data }) {
+  const stick = isNearBottom();
   const src = `data:${mime};base64,${data}`;
   const img = document.createElement("img");
   img.className = "tool-figure";
@@ -128,11 +140,14 @@ function renderFigure({ id, name, mime, data }) {
   img.alt = name || "MATLAB figure";
   img.title = "Click to enlarge";
   img.addEventListener("click", () => openLightbox(src, img.alt));
+  // The image has no height until it decodes, so a scroll now would undershoot;
+  // follow it once it lays out (only if the user was pinned to the bottom).
+  if (stick) img.addEventListener("load", scrollToEnd);
 
   // Attach to the card that produced it; fall back to the timeline.
   const card = cards.get(id);
   (card || timeline).appendChild(img);
-  scrollToEnd();
+  if (stick) scrollToEnd();
 }
 
 function openLightbox(src, alt) {
@@ -150,6 +165,7 @@ function closeLightbox() {
 }
 
 function renderError({ message, traceback }) {
+  const stick = isNearBottom();
   clearEmptyState();
   const card = document.createElement("div");
   card.className = "error-card";
@@ -167,7 +183,7 @@ function renderError({ message, traceback }) {
     card.appendChild(details);
   }
   timeline.appendChild(card);
-  scrollToEnd();
+  if (stick) scrollToEnd();
 }
 
 function formatInput(input) {
@@ -203,6 +219,10 @@ function setBusy(busy) {
 function startTurn(message) {
   setBusy(true);
   cards.clear();
+  // The user just initiated this turn, so snap to the bottom: it makes the
+  // first incoming card "near bottom", so auto-follow re-engages even if they
+  // had scrolled up while reading the previous turn.
+  scrollToEnd();
   const params = new URLSearchParams({ message, model: modelSelect.value });
   source = new EventSource("/api/stream?" + params.toString());
 
