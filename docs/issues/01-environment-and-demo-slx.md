@@ -14,12 +14,12 @@ Stand up the local prerequisites the live demo depends on (PRD phase F0). This i
 - Verify available toolboxes with `detect_matlab_toolboxes` and record the exact required-toolbox list for `mbd_demo.slx`.
 
 ## Acceptance criteria
-- [ ] `simulink-agentic-toolkit` installs cleanly and the MATLAB MCP Core Server binary is present under `~/.matlab/agentic-toolkits/`.
+- [x] `simulink-agentic-toolkit` installs cleanly and the MATLAB MCP Core Server binary is present under `~/.matlab/agentic-toolkits/` (`bin/matlab-mcp-core-server.exe`).
 - [ ] `ant auth login` completed; credential resolution works for the backend.
-- [ ] `mbd_demo.slx` exists, simulates, and writes its output signal via a To Workspace block.
-- [x] The exact list of toolboxes required by `mbd_demo.slx` is documented — see `docs/toolboxes.md`.
-- [ ] The `.mltbx` install was tested in isolation before relying on it (risk mitigation).
-- [ ] Commit any produced artifacts (e.g. `mbd_demo.slx`, toolbox list) with a relevant `-m` message. **Commit only — do not push.**
+- [x] `mbd_demo.slx` exists, simulates, and writes its output signal via a To Workspace block.
+- [x] The exact list of toolboxes required by `mbd_demo.slx` is documented — see `docs/toolboxes.md`. **Note:** only MATLAB base + Simulink licensed; **no Control System Toolbox**, so prompt 2 must compute settling time manually (not `stepinfo`).
+- [x] The `.mltbx` install was tested in isolation before relying on it (installed via `installToolbox` + `setupAgenticToolkit`, binary verified present).
+- [x] Commit any produced artifacts (e.g. `mbd_demo.slx`, toolbox list) with a relevant `-m` message. **Commit only — do not push.**
 
 ## How to build mbd_demo.slx
 

@@ -18,20 +18,27 @@ Install via: `setupAgenticToolkit("install")` after adding the `.mltbx` to MATLA
 
 ## Verification
 
-Run the following in MATLAB after the agentic toolkit is installed:
+Run `ver` in the MATLAB Command Window — it lists licensed products directly.
+(`detect_matlab_toolboxes` is an **MCP tool the agent calls**, not a MATLAB
+command, so it won't resolve if typed in the Command Window.)
 
-```matlab
-% Lists all licensed toolboxes — confirm Simulink is present
-detect_matlab_toolboxes
+**Verified 2026-06-10 (R2026a)** — `ver` reports:
+
+```
+MATLAB                          Version 26.1   (R2026a)
+Simulink                        Version 26.1   (R2026a)
+MATLAB MCP Core Server Toolbox  Version 0.1.1  (R2026a)
 ```
 
-Expected minimum output includes `Simulink`.
+i.e. **MATLAB base + Simulink only**. No optional toolboxes are licensed.
 
-## Toolboxes that expand the demo (optional, not required)
+## Toolboxes that would expand the demo (NOT licensed on this machine)
 
-| Toolbox | What it enables |
-|---------|----------------|
-| Control System Toolbox | `stepinfo()` for rise/settling time — used in prompt 2 (overshoot analysis) |
-| Signal Processing Toolbox | Advanced signal analysis on logged `x` output |
+| Toolbox | What it enables | Status |
+|---------|----------------|--------|
+| Control System Toolbox | `stepinfo()` for rise/settling time — prompt 2 (overshoot analysis) | ❌ not licensed |
+| Signal Processing Toolbox | Advanced signal analysis on logged `x` output | ❌ not licensed |
 
-If Control System Toolbox is unavailable, prompt 2 can be rewritten to compute settling time manually from the `x` array without `stepinfo`.
+**Consequence:** Control System Toolbox is **confirmed absent**, so **prompt 2
+(Issue 04) must compute settling time manually from the `x` array** — do not
+rely on `stepinfo()`.
