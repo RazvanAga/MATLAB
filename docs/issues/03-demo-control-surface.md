@@ -16,11 +16,11 @@ The demo driver's control surface on top of the existing skeleton UI, so the dem
 The actual prompt text and extra-safe prompt come from Slice 4; wire the buttons to consume that content (placeholders acceptable until Slice 4 lands).
 
 ## Acceptance criteria
-- [ ] Numbered prompt buttons (1/2/3) + an extra-safe button are present and each sends its prompt.
-- [ ] Buttons remain visible and re-clickable after use; a step can be repeated.
-- [ ] Empty state shows title, buttons, and the context line.
-- [ ] Reset clears the timeline and dispatches `close all; clear` over the tool path.
-- [ ] After implementation, create a git commit with a relevant `-m` message describing what was achieved. **Commit only — do not push.**
+- [x] Numbered prompt buttons (1/2/3) + an extra-safe button are present and each sends its prompt.
+- [x] Buttons remain visible and re-clickable after use; a step can be repeated.
+- [x] Empty state shows title, buttons, and the context line.
+- [x] Reset clears the timeline and dispatches `close all; clear` over the tool path.
+- [x] After implementation, create a git commit with a relevant `-m` message describing what was achieved. **Commit only — do not push.**
 
 ## Blocked by
 - #3 (skeleton) — the timeline/SSE/tool path must exist.
