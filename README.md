@@ -27,7 +27,7 @@ MATLAB R2026a / Simulink   (visible, shared session)
 
 - **Backend** — FastAPI (Python 3.13) running the Anthropic agentic loop. Each MCP tool call is wrapped at a single instrumentation point that streams `tool_use` / `tool_result` events to the browser over SSE and watches for newly generated figures.
 - **MCP layer** — the agent talks to MATLAB through the **MATLAB MCP Core Server**, a standalone binary installed alongside the Simulink Agentic Toolkit. No "MATLAB Engine for Python" layer is involved.
-- **MATLAB session** — runs in `existing` mode against a session you've shared with `matlab.engine.shareEngine`, so everything happens in the MATLAB window you can see.
+- **MATLAB session** — runs in `existing` mode against a session you've registered with `shareMATLABSession`, so everything happens in the MATLAB window you can see.
 - **Frontend** — vanilla HTML/JS, no build step. A single-column timeline with prompt buttons, syntax-highlighted MATLAB code, inline figures, and a reset control. Libraries are vendored locally; the only external dependency at runtime is the Anthropic API.
 
 ## Why MCP for the PMT workflow
@@ -48,7 +48,48 @@ Early build. Work is tracked as issues in this repository (see [docs/issues/](do
 - MATLAB R2026a with the Simulink Agentic Toolkit installed (this also installs the MATLAB MCP Core Server).
 - Python 3.13 with `anthropic[mcp]`.
 - Anthropic credentials (`ant auth login`).
-- A MATLAB session started and shared via `matlab.engine.shareEngine`.
+- A MATLAB session registered for MCP via `shareMATLABSession` (see below).
+
+## Running the demo
+
+**1. Register the MATLAB session for MCP.** In the **MATLAB Command Window** (R2026a, kept open and visible):
+
+```matlab
+shareMATLABSession
+```
+
+This starts MATLAB's connector service and writes a fresh `sessionDetails.json` that the Core Server discovers. Run it **once per MATLAB session** — after every MATLAB (or PC) restart.
+
+> ⚠️ This is **not** `matlab.engine.shareEngine` — that's a different, unrelated mechanism the Core Server ignores. Use `shareMATLABSession` (from the MATLAB MCP Core Server Toolbox). If you skip this or run the wrong one, the backend fails at startup with `MATLAB preflight returned an error: failed to attach to MATLAB session` (a stale `sessionDetails.json` pointing at a dead session). Re-run `shareMATLABSession` to fix.
+
+**2. Start the backend.** In **PowerShell**, from the repo root:
+
+```powershell
+cd C:\Users\Razvan\Projects\MATLAB
+uv run uvicorn backend.app:app
+```
+
+On startup the backend launches the real Core Server (`--matlab-session-mode=existing`, strict) and runs a MATLAB preflight ping. Wait for `Application startup complete`. (First run in a fresh clone also triggers `uv` to install dependencies.)
+
+**3. Open the UI** at <http://127.0.0.1:8000> and click **Step 1**, or type a message. Watch the MATLAB window execute alongside the chat.
+
+For local development, add `--reload` to pick up code edits automatically.
+
+### Run without MATLAB (chain/UI only)
+
+To exercise the FastAPI → SSE → UI spine against the in-repo Mock MCP (no MATLAB, no preflight):
+
+```powershell
+$env:MATLAB_MCP_MOCK = "1"; uv run uvicorn backend.app:app
+```
+
+### Tests
+
+No MATLAB or Anthropic API needed:
+
+```powershell
+uv run pytest
+```
 
 ## Out of scope
 
