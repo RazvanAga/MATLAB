@@ -39,6 +39,7 @@ def _fake_driver(client, messages, tools, instrumented, model):
 
 async def _collect_events(monkeypatch, message: str) -> list[dict]:
     monkeypatch.setattr("backend.agent.default_driver", _fake_driver)
+    monkeypatch.setenv("MATLAB_MCP_MOCK", "1")  # F1 chain test runs against the Mock MCP
     async with app.router.lifespan_context(app):
         transport = httpx.ASGITransport(app=app)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
