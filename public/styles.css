@@ -120,12 +120,18 @@ body {
 /* Timeline ---------------------------------------------------------------- */
 .timeline {
   flex: 1;
+  min-height: 0; /* let the flex item shrink so overflow-y:auto actually scrolls */
   overflow-y: auto;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+/* Timeline items must be able to shrink below their content width; otherwise a
+   long, unbreakable code line stretches the card past the column and gets
+   clipped. With min-width:0 the long line scrolls inside the card instead. */
+.agent-text, .tool-card, .error-card { min-width: 0; }
+
 .empty-state {
   margin: auto;
   max-width: 520px;
@@ -184,7 +190,11 @@ body {
   background: var(--code-bg);
   font-family: var(--font-mono);
   font-size: 14px;
-  overflow-x: auto;
+  /* Wrap long lines (e.g. the exportgraphics path) instead of overflowing the
+     card — the card has overflow:hidden, so overflow would be clipped, not
+     scrollable. Preserves newlines; breaks unbreakable tokens like paths. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .tool-card .tool-result {
   border-top: 1px solid var(--border);

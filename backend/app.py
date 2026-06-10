@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from anthropic import AsyncAnthropic
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from mcp import ClientSession
@@ -29,6 +30,11 @@ from . import agent
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PUBLIC_DIR = REPO_ROOT / "public"
+
+# Load ANTHROPIC_API_KEY (and friends) from a gitignored .env at the repo root,
+# so the key persists across runs without re-exporting it. A real environment
+# variable still wins; absent .env is a no-op. AsyncAnthropic() reads it later.
+load_dotenv(REPO_ROOT / ".env")
 
 # Real MATLAB MCP Core Server (Go binary, installed by the Simulink Agentic
 # Toolkit). The Simulink extension file adds the 7 model_* tools on top of the

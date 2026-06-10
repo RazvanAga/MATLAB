@@ -172,6 +172,12 @@ function renderError({ message, traceback }) {
 
 function formatInput(input) {
   if (typeof input === "string") return input;
+  if (input && typeof input === "object") {
+    // Show the MATLAB the agent ran, with real newlines — not a JSON blob with
+    // escaped "\n". evaluate_matlab_code -> code; check/run tools -> script_path.
+    if (typeof input.code === "string") return input.code;
+    if (typeof input.script_path === "string") return input.script_path;
+  }
   try {
     return JSON.stringify(input, null, 2);
   } catch {
