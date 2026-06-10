@@ -18,3 +18,10 @@ figures/
 
 # Backend launch logs from run-demo.ps1
 .run/
+
+# Rehearsal screen recordings are large binaries — link them, don't commit them
+# (see docs/rehearsal/fallback-assets.md). Screenshots (PNG) ARE committed.
+*.mp4
+*.mov
+*.mkv
+*.webm
