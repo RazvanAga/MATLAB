@@ -81,6 +81,9 @@ async def _preflight_matlab(session: ClientSession) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # The agent exports figures here; create it so exportgraphics never fails on
+    # a missing folder, and so the wrapper has a folder to watch.
+    agent.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     async with AsyncExitStack() as stack:
         read, write = await stack.enter_async_context(stdio_client(mcp_server_params()))
         session = await stack.enter_async_context(ClientSession(read, write))

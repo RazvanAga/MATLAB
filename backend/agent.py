@@ -148,7 +148,7 @@ async def run_turn(
 
     ``session`` is the live MCP ClientSession; it is wrapped so every tool call
     is instrumented. Always emits a terminal ``done`` event, even on failure."""
-    instrumented = InstrumentedSession(session, emit)
+    instrumented = InstrumentedSession(session, emit, figures_dir=FIGURES_DIR)
     try:
         tools_result = await session.list_tools()
         # Expose only the restricted demo subset (Issue 04). The Mock MCP's `echo`

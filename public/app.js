@@ -120,6 +120,35 @@ function renderToolResult({ id, output, is_error }) {
   scrollToEnd();
 }
 
+function renderFigure({ id, name, mime, data }) {
+  const src = `data:${mime};base64,${data}`;
+  const img = document.createElement("img");
+  img.className = "tool-figure";
+  img.src = src;
+  img.alt = name || "MATLAB figure";
+  img.title = "Click to enlarge";
+  img.addEventListener("click", () => openLightbox(src, img.alt));
+
+  // Attach to the card that produced it; fall back to the timeline.
+  const card = cards.get(id);
+  (card || timeline).appendChild(img);
+  scrollToEnd();
+}
+
+function openLightbox(src, alt) {
+  const overlay = document.getElementById("lightbox");
+  const img = document.getElementById("lightbox-img");
+  img.src = src;
+  img.alt = alt || "";
+  overlay.classList.add("open");
+}
+
+function closeLightbox() {
+  const overlay = document.getElementById("lightbox");
+  overlay.classList.remove("open");
+  document.getElementById("lightbox-img").src = "";
+}
+
 function renderError({ message, traceback }) {
   clearEmptyState();
   const card = document.createElement("div");
@@ -177,6 +206,7 @@ function startTurn(message) {
       case "agent_text": renderAgentText(event.text); break;
       case "tool_use": renderToolUse(event); break;
       case "tool_result": renderToolResult(event); break;
+      case "figure": renderFigure(event); break;
       case "error": renderError(event); break;
       case "done": closeTurn(); break;
     }
@@ -217,4 +247,10 @@ resetBtn.addEventListener("click", () => {
   if (source) return;
   restoreEmptyState();
   startTurn(RESET_PROMPT);
+});
+
+// Lightbox: click the backdrop or press Escape to close.
+document.getElementById("lightbox").addEventListener("click", closeLightbox);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeLightbox();
 });

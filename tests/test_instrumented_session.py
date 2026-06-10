@@ -5,6 +5,8 @@ one ``tool_use`` then one ``tool_result`` with a matching id, and propagates the
 error flag — the behaviour the timeline UI depends on.
 """
 
+import base64
+
 from mcp.types import CallToolResult, TextContent
 
 from backend.instrumented_session import InstrumentedSession
@@ -68,3 +70,57 @@ async def test_delegates_unknown_attributes_to_session():
 
     session = InstrumentedSession(_FakeSession(), emit)
     assert await session.initialize() == "initialized"
+
+
+class _FigSession:
+    """Fake MCP session that drops a PNG named in ``arguments['make']`` into the
+    watched folder before returning, simulating MATLAB's exportgraphics."""
+
+    def __init__(self, figures_dir) -> None:
+        self._dir = figures_dir
+
+    async def call_tool(self, name, arguments=None, **kwargs):
+        make = (arguments or {}).get("make")
+        if make:
+            (self._dir / make).write_bytes(b"PNG-" + make.encode())
+        return CallToolResult(content=[], isError=False)
+
+
+async def test_new_figure_emitted_once_and_attributed_to_its_call(tmp_path):
+    (tmp_path / "old.png").write_bytes(b"OLD")  # pre-existing: must never be emitted
+
+    seen: list[dict] = []
+
+    async def emit(event):
+        seen.append(event)
+
+    session = InstrumentedSession(_FigSession(tmp_path), emit, figures_dir=tmp_path)
+
+    await session.call_tool("evaluate_matlab_code", {"make": "fig_a.png"})
+    await session.call_tool("evaluate_matlab_code", {})  # produces no figure
+
+    figs = [e for e in seen if e["type"] == "figure"]
+    assert len(figs) == 1  # emitted exactly once, and the old figure never
+    fig = figs[0]
+    assert fig["name"] == "fig_a.png"
+    assert fig["mime"] == "image/png"
+    assert base64.b64decode(fig["data"]) == b"PNG-fig_a.png"
+    # Attributed to the call that produced it (the first tool_use), not the second.
+    assert fig["id"] == seen[0]["id"]
+    # Event order within the producing call: result fills, then the figure.
+    assert [e["type"] for e in seen[:3]] == ["tool_use", "tool_result", "figure"]
+
+
+async def test_preexisting_figures_are_never_emitted(tmp_path):
+    (tmp_path / "stale.png").write_bytes(b"STALE")
+
+    seen: list[dict] = []
+
+    async def emit(event):
+        seen.append(event)
+
+    # No new files created during the call -> nothing to emit.
+    session = InstrumentedSession(_FigSession(tmp_path), emit, figures_dir=tmp_path)
+    await session.call_tool("evaluate_matlab_code", {})
+
+    assert not [e for e in seen if e["type"] == "figure"]
