@@ -149,6 +149,21 @@ body {
   background: var(--surface);
   border-top: 1px solid var(--border);
 }
+.composer select {
+  padding: 12px 10px;
+  font-size: 15px;
+  font-family: var(--font-sans);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.composer select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-weak);
+}
 .composer input {
   flex: 1;
   padding: 12px 14px;

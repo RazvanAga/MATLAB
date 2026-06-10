@@ -17,8 +17,21 @@ from anthropic.lib.tools.mcp import async_mcp_tool
 from . import events
 from .instrumented_session import InstrumentedSession, Emit
 
-MODEL = "claude-opus-4-8"
 MAX_TOKENS = 16000
+
+# Selectable model tiers. Adaptive thinking + the effort parameter are
+# Opus-4.6+/Sonnet-4.6 features; Haiku 4.5 rejects both (400), so it runs plain.
+MODELS: dict[str, str] = {
+    "opus": "claude-opus-4-8",
+    "sonnet": "claude-sonnet-4-6",
+    "haiku": "claude-haiku-4-5",
+}
+DEFAULT_MODEL = "opus"
+_MODEL_PARAMS: dict[str, dict] = {
+    "opus": {"thinking": {"type": "adaptive"}, "output_config": {"effort": "medium"}},
+    "sonnet": {"thinking": {"type": "adaptive"}, "output_config": {"effort": "medium"}},
+    "haiku": {},
+}
 
 # Minimal F1 system prompt. The focused, full system prompt (figure export,
 # guardrails, workspace re-derivation) is Issue 04.
@@ -27,9 +40,11 @@ SYSTEM_PROMPT = (
     "tools to act on it, then briefly confirm what happened. Keep replies short."
 )
 
-# A driver takes (client, messages, tools, instrumented_session) and returns an
-# async iterator of assistant messages (each with a ``.content`` list of blocks).
-Driver = Callable[[Any, list[dict[str, Any]], list[Any], InstrumentedSession], AsyncIterator[Any]]
+# A driver takes (client, messages, tools, instrumented_session, model_key) and
+# returns an async iterator of assistant messages (each with a ``.content`` list).
+Driver = Callable[
+    [Any, list[dict[str, Any]], list[Any], InstrumentedSession, str], AsyncIterator[Any]
+]
 
 
 def default_driver(
@@ -37,6 +52,7 @@ def default_driver(
     messages: list[dict[str, Any]],
     tools: list[Any],
     instrumented: InstrumentedSession,
+    model: str,
 ) -> AsyncIterator[Any]:
     """Production driver: the real Anthropic tool_runner agentic loop.
 
@@ -44,13 +60,12 @@ def default_driver(
     tools are already bound to ``instrumented`` via ``async_mcp_tool``, so the
     ``instrumented`` argument is unused here (it exists for the fake driver)."""
     return client.beta.messages.tool_runner(
-        model=MODEL,
+        model=MODELS[model],
         max_tokens=MAX_TOKENS,
-        thinking={"type": "adaptive"},
-        output_config={"effort": "medium"},
         system=SYSTEM_PROMPT,
         messages=messages,
         tools=tools,
+        **_MODEL_PARAMS[model],  # adaptive thinking + effort, except on Haiku
     )
 
 
@@ -60,6 +75,7 @@ async def run_turn(
     session: Any,
     *,
     client: Any = None,
+    model: str = DEFAULT_MODEL,
     driver: Driver = default_driver,
 ) -> None:
     """Run one agentic turn for ``message``, emitting SSE events via ``emit``.
@@ -72,7 +88,7 @@ async def run_turn(
         tools = [async_mcp_tool(t, instrumented) for t in tools_result.tools]
 
         messages = [{"role": "user", "content": message}]
-        async for msg in driver(client, messages, tools, instrumented):
+        async for msg in driver(client, messages, tools, instrumented, model):
             for block in msg.content:
                 if getattr(block, "type", None) == "text":
                     await emit(events.agent_text(block.text))

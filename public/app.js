@@ -6,6 +6,7 @@ const emptyState = document.getElementById("empty-state");
 const composer = document.getElementById("composer");
 const input = document.getElementById("message");
 const sendBtn = document.getElementById("send");
+const modelSelect = document.getElementById("model");
 
 // Map of tool_use id -> card element, so tool_result fills the right card.
 const cards = new Map();
@@ -108,13 +109,15 @@ function escapeHtml(s) {
 function setBusy(busy) {
   input.disabled = busy;
   sendBtn.disabled = busy;
+  modelSelect.disabled = busy;
   if (!busy) input.focus();
 }
 
 function startTurn(message) {
   setBusy(true);
   cards.clear();
-  source = new EventSource("/api/stream?message=" + encodeURIComponent(message));
+  const params = new URLSearchParams({ message, model: modelSelect.value });
+  source = new EventSource("/api/stream?" + params.toString());
 
   source.onmessage = (e) => {
     const event = JSON.parse(e.data);

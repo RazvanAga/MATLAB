@@ -45,8 +45,11 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/api/stream")
-async def stream(request: Request, message: str):
+async def stream(request: Request, message: str, model: str = agent.DEFAULT_MODEL):
     """Run one agentic turn for ``message`` and stream SSE events to the browser."""
+    if model not in agent.MODELS:  # ignore unknown values rather than 400 the demo
+        model = agent.DEFAULT_MODEL
+
     queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue()
 
     async def emit(event: dict[str, Any]) -> None:
@@ -58,6 +61,7 @@ async def stream(request: Request, message: str):
             emit,
             request.app.state.mcp,
             client=request.app.state.anthropic,
+            model=model,
             # Read the driver off the module at call time so tests can stub the model.
             driver=agent.default_driver,
         )

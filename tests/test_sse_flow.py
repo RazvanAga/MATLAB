@@ -24,7 +24,7 @@ class _Message:
         self.content = [_TextBlock(text)]
 
 
-def _fake_driver(client, messages, tools, instrumented):
+def _fake_driver(client, messages, tools, instrumented, model):
     """Stand-in for the Anthropic tool_runner: narrate, call echo via the real
     wrapper, narrate again. Drives the genuine wrapper + Mock MCP."""
 

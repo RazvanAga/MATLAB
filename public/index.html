@@ -24,6 +24,11 @@
   </main>
 
   <form id="composer" class="composer" autocomplete="off">
+    <select id="model" name="model" title="Model" aria-label="Model">
+      <option value="opus">Opus 4.8</option>
+      <option value="sonnet">Sonnet 4.6</option>
+      <option value="haiku">Haiku 4.5</option>
+    </select>
     <input id="message" name="message" type="text"
            placeholder="Type a message and press Enter…" required />
     <button id="send" type="submit">Send</button>
