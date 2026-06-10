@@ -9,3 +9,6 @@ __pycache__/
 slprj/
 *.slxc
 *.autosave
+
+# Agent-exported figures (watched + streamed inline, not source)
+figures/

@@ -1,12 +1,36 @@
 // Frontend: open an EventSource per message and render the agentic timeline.
 // Events (see backend/events.py): agent_text, tool_use, tool_result, error, done.
 
-// Scripted demo prompts — placeholders until Slice 4 (Issue 04) lands.
+// Scripted demo prompts (Issue 04). High-level on purpose — the system prompt
+// (backend/agent.py) handles figure export, check-before-run, the read-only
+// Simulink guardrail, defensive workspace re-derivation, and the no-Control-
+// System-Toolbox constraint, so these stay focused on the engineering task.
+// 1 + 2 share one mass-spring-damper response; 3 is the same physics in Simulink.
 const PROMPTS = {
-  "1":     "STEP_1_PLACEHOLDER",
-  "2":     "STEP_2_PLACEHOLDER",
-  "3":     "STEP_3_PLACEHOLDER",
-  "extra": "EXTRA_PLACEHOLDER",
+  // 1 — mass-spring-damper step response in MATLAB (underdamped → clear overshoot).
+  "1":
+    "Simulate the step response of a mass-spring-damper system in MATLAB. " +
+    "Use mass m = 1 kg, damping coefficient c = 2 N·s/m, and stiffness " +
+    "k = 20 N/m, with a unit step force applied at t = 0. Solve for the " +
+    "displacement over 0 to 5 seconds, then plot displacement versus time " +
+    "with labeled axes and a title.",
+  // 2 — overshoot/settling follow-up; reuses step 1's response, computed by hand.
+  "2":
+    "From that same step response, compute the percent overshoot relative to " +
+    "the steady-state value and the 2% settling time. Calculate both directly " +
+    "from the displacement array. Print the two values, then redraw the plot " +
+    "with the peak and the settling time marked.",
+  // 3 — same system as a Simulink block diagram: read-only inspect + simulate.
+  "3":
+    "Open the Simulink model mbd_demo.slx — the same mass-spring-damper as a " +
+    "block diagram. Give a short overview of its structure, then simulate it " +
+    "and read the logged displacement signal. Plot that signal and confirm it " +
+    "matches the MATLAB response from step 1 (same physics, now in Simulink).",
+  // extra-safe — bulletproof, no workspace/Simulink dependency, always yields a figure.
+  "extra":
+    "In MATLAB, create a time vector t from 0 to 2*pi and plot sin(t) and " +
+    "cos(t) together on the same axes. Add a legend, a grid, axis labels, and " +
+    "a title.",
 };
 const RESET_PROMPT = "Run the following MATLAB command exactly: close all; clear";
 
