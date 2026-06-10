@@ -16,10 +16,29 @@
     </div>
   </header>
 
+  <div class="prompt-bar" role="toolbar" aria-label="Demo steps">
+    <div class="step-buttons">
+      <button class="prompt-btn" data-step="1" type="button">
+        <span class="step-badge">1</span>Step 1
+      </button>
+      <button class="prompt-btn" data-step="2" type="button">
+        <span class="step-badge">2</span>Step 2
+      </button>
+      <button class="prompt-btn" data-step="3" type="button">
+        <span class="step-badge">3</span>Step 3
+      </button>
+      <button class="prompt-btn extra-btn" data-step="extra" type="button">
+        &#9733;&nbsp;Extra-safe
+      </button>
+    </div>
+    <button id="reset-btn" class="reset-btn" type="button">&#8635; Reset</button>
+  </div>
+
   <main id="timeline" class="timeline" aria-live="polite">
     <div id="empty-state" class="empty-state">
-      <p>Send a message to drive the tool chain. Each step appears as a card: the
-      agent's decision, the tool call, and the result.</p>
+      <h2 class="empty-title">MATLAB&nbsp;/&nbsp;Simulink MCP Demo</h2>
+      <p class="empty-context">chatbot care conduce MATLAB/Simulink live prin MCP</p>
+      <p class="empty-hint">Select a numbered step above to start, or type a custom message below.</p>
     </div>
   </main>
 

@@ -45,6 +45,78 @@ body {
 .title-block h1 { margin: 0; font-size: 19px; font-weight: 700; }
 .title-block .subtitle { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
 
+/* Prompt bar -------------------------------------------------------------- */
+.prompt-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.step-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.prompt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
+}
+.prompt-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+}
+.prompt-btn:disabled { opacity: 0.45; cursor: default; }
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.extra-btn { color: var(--accent); border-color: var(--accent); }
+.extra-btn:hover:not(:disabled) { background: var(--accent-weak); }
+.reset-btn {
+  margin-left: auto;
+  padding: 7px 14px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.reset-btn:hover:not(:disabled) {
+  color: var(--error);
+  border-color: var(--error);
+  background: var(--error-weak);
+}
+.reset-btn:disabled { opacity: 0.45; cursor: default; }
+
 /* Timeline ---------------------------------------------------------------- */
 .timeline {
   flex: 1;
@@ -59,6 +131,23 @@ body {
   max-width: 520px;
   text-align: center;
   color: var(--muted);
+}
+.empty-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--text);
+}
+.empty-context {
+  font-size: 15px;
+  color: var(--accent);
+  font-style: italic;
+  margin: 0 0 14px;
+}
+.empty-hint {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
 }
 
 /* Agent narration */

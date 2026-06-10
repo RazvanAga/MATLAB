@@ -1,19 +1,45 @@
 // Frontend: open an EventSource per message and render the agentic timeline.
 // Events (see backend/events.py): agent_text, tool_use, tool_result, error, done.
 
+// Scripted demo prompts — placeholders until Slice 4 (Issue 04) lands.
+const PROMPTS = {
+  "1":     "STEP_1_PLACEHOLDER",
+  "2":     "STEP_2_PLACEHOLDER",
+  "3":     "STEP_3_PLACEHOLDER",
+  "extra": "EXTRA_PLACEHOLDER",
+};
+const RESET_PROMPT = "Run the following MATLAB command exactly: close all; clear";
+
+const EMPTY_STATE_HTML = `
+  <h2 class="empty-title">MATLAB&nbsp;/&nbsp;Simulink MCP Demo</h2>
+  <p class="empty-context">chatbot care conduce MATLAB/Simulink live prin MCP</p>
+  <p class="empty-hint">Select a numbered step above to start, or type a custom message below.</p>
+`;
+
 const timeline = document.getElementById("timeline");
-const emptyState = document.getElementById("empty-state");
 const composer = document.getElementById("composer");
 const input = document.getElementById("message");
 const sendBtn = document.getElementById("send");
 const modelSelect = document.getElementById("model");
+const promptBtns = document.querySelectorAll(".prompt-btn");
+const resetBtn = document.getElementById("reset-btn");
 
 // Map of tool_use id -> card element, so tool_result fills the right card.
 const cards = new Map();
 let source = null;
 
 function clearEmptyState() {
-  if (emptyState && emptyState.parentNode) emptyState.remove();
+  const el = document.getElementById("empty-state");
+  if (el) el.remove();
+}
+
+function restoreEmptyState() {
+  while (timeline.firstChild) timeline.removeChild(timeline.firstChild);
+  const el = document.createElement("div");
+  el.id = "empty-state";
+  el.className = "empty-state";
+  el.innerHTML = EMPTY_STATE_HTML;
+  timeline.appendChild(el);
 }
 
 function scrollToEnd() {
@@ -110,6 +136,8 @@ function setBusy(busy) {
   input.disabled = busy;
   sendBtn.disabled = busy;
   modelSelect.disabled = busy;
+  promptBtns.forEach((b) => { b.disabled = busy; });
+  resetBtn.disabled = busy;
   if (!busy) input.focus();
 }
 
@@ -151,4 +179,18 @@ composer.addEventListener("submit", (e) => {
   if (!message || source) return;
   input.value = "";
   startTurn(message);
+});
+
+promptBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const prompt = PROMPTS[btn.dataset.step];
+    if (!prompt || source) return;
+    startTurn(prompt);
+  });
+});
+
+resetBtn.addEventListener("click", () => {
+  if (source) return;
+  restoreEmptyState();
+  startTurn(RESET_PROMPT);
 });
