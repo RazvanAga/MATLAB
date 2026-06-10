@@ -90,7 +90,7 @@ Demonstrația finală constă din **două piese complementare**, pe axe diferite
 
 ### Simulink
 - Folosim **Simulink Agentic Toolkit complet** (7 tool-uri MCP dedicate + skills), dar în demo arătăm **doar read + simulate** (deschide model → `sim` → citește semnalul) — păstrăm narațiunea ISO 26262 read-only, deși toolkit-ul are și capabilități de scriere pe care alegem să nu le folosim.
-- **`demo.slx`:** **același sistem mass-spring-damper** ca în primul prompt MATLAB, dar ca bloc-diagramă (continuitate narativă „aceeași fizică, acum ca MBD"). Semnal logat explicit cu bloc **To Workspace** → trivial de citit, nu depinde de structura `out.yout`.
+- **`mbd_demo.slx`:** **același sistem mass-spring-damper** ca în primul prompt MATLAB, dar ca bloc-diagramă (continuitate narativă „aceeași fizică, acum ca MBD"). Semnal logat explicit cu bloc **To Workspace** → trivial de citit, nu depinde de structura `out.yout`.
 
 ### Frontend (UI)
 - **Tech:** vanilla HTML/JS, fără build step. **highlight.js** (cod) + **marked** (markdown text agent) **vendate local** — zero CDN, fără dependență de internet în afară de API-ul Anthropic.
@@ -141,10 +141,10 @@ Greenfield — nu există cod încă. Testele backend-ului urmează patternul st
 ## Further Notes
 
 ### Faze & milestone-uri
-- **F0 — Prerechizite:** install `simulink-agentic-toolkit` (aduce și core server-ul) + `ant auth login` + construiește `demo.slx` (mass-spring-damper cu To Workspace) + verifică toolbox-urile cu `detect_matlab_toolboxes`.
+- **F0 — Prerechizite:** install `simulink-agentic-toolkit` (aduce și core server-ul) + `ant auth login` + construiește `mbd_demo.slx` (mass-spring-damper cu To Workspace) + verifică toolbox-urile cu `detect_matlab_toolboxes`.
 - **F1 — Schelet end-to-end + Mock MCP (Must):** FastAPI + UI cu carduri timeline + SSE + tool_runner + wrapper, validate cu Mock MCP `echo`. **Fără MATLAB.** Criteriu: un mesaj din browser → agentul cheamă `echo` → cardul apare „running" apoi se umple, prin SSE.
 - **F2 — MATLAB live:** core server real, `existing` strict, validează persistența workspace + promptul mass-spring-damper rulează și întoarce output.
-- **F3 — Wow factor:** figuri inline (wrapper + watch + lightbox) + demo Simulink read/sim pe `demo.slx` + `check_matlab_code` ca beat vizibil.
+- **F3 — Wow factor:** figuri inline (wrapper + watch + lightbox) + demo Simulink read/sim pe `mbd_demo.slx` + `check_matlab_code` ca beat vizibil.
 - **F4 (opțional):** standarde de cod explicite în system prompt, polish UI, streaming token-cu-token.
 
 ### Riscuri & mitigări
@@ -163,4 +163,4 @@ Greenfield — nu există cod încă. Testele backend-ului urmează patternul st
 - Textul precis al celor 3 prompturi scriptate + promptul „extra sigur".
 - Conținutul exact al system prompt-ului.
 - Structura scriptului de pre-flight.
-- Lista exactă de toolbox-uri cerute de `demo.slx`.
+- Lista exactă de toolbox-uri cerute de `mbd_demo.slx`.

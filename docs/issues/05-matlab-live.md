@@ -1,6 +1,6 @@
 # Slice 5 — MATLAB live: real core server, `existing` strict
 
-**Type:** AFK · **Blocked by:** #2 (env/demo.slx), #3 (skeleton), #5 (content)
+**Type:** AFK · **Recommended model:** Opus 4.8 · **Blocked by:** #2 (env/mbd_demo.slx), #3 (skeleton), #5 (content)
 
 ## Parent
 PRD #1 — Live AI Demo: Chatbot care conduce MATLAB/Simulink prin MCP
@@ -20,9 +20,9 @@ Replace the Mock MCP with the real MATLAB MCP Core Server and prove the agent dr
 - [ ] Prompt 1 runs in the real MATLAB and returns numeric output shown in the card (not a mock).
 - [ ] Base-workspace persistence between `evaluate` calls is validated manually.
 - [ ] `check_matlab_code` shows as a distinct beat before the run.
-- [ ] After implementation, create a commit with a descriptive message summarizing what was achieved.
+- [ ] After implementation, create a git commit with a relevant `-m` message describing what was achieved. **Commit only — do not push.**
 
 ## Blocked by
-- #2 (environment & `demo.slx`) — core server + shared session must exist.
+- #2 (environment & `mbd_demo.slx`) — core server + shared session must exist.
 - #3 (skeleton) — the chain to swap onto real MCP.
 - #5 (content) — system prompt (figure export, guardrails, workspace re-derivation) and tool subset.

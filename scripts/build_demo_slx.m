@@ -1,5 +1,7 @@
 %% build_demo_slx.m
-% Builds demo.slx: mass-spring-damper as a Simulink block diagram.
+% Builds mbd_demo.slx: mass-spring-damper as a Simulink block diagram.
+% Model name is "mbd_demo" (not "demo") to avoid shadowing MATLAB's built-in
+% demo.m help function, which causes warnings and unpredictable name resolution.
 %
 % System: m·ẍ + c·ẋ + k·x = F(t)
 %   m = 1 kg, c = 1.5 N·s/m, k = 20 N/m
@@ -10,13 +12,15 @@
 %
 % Output signal x(t) is logged via a To Workspace block (variable "x",
 % Array format) so it is trivially readable without depending on out.yout.
-% The simulation time vector is available as "tout" in the base workspace.
+% Because sim() is called with an output argument, Simulink runs in
+% single-output mode: the logged signal is captured as simOut.x (and the
+% time vector as simOut.tout), not written to the base workspace.
 %
 % Usage: run from MATLAB with the repo root on the path, or call directly:
 %   >> run('scripts/build_demo_slx.m')
 
-mdl      = 'demo';
-out_path = fullfile(fileparts(mfilename('fullpath')), '..', 'demo.slx');
+mdl      = 'mbd_demo';
+out_path = fullfile(fileparts(mfilename('fullpath')), '..', 'mbd_demo.slx');
 
 % --- Parameters ---
 m = 1;     % mass [kg]
@@ -121,11 +125,14 @@ save_system(mdl, out_path);
 close_system(mdl, 0);
 fprintf('Saved: %s\n', out_path);
 
-% Quick smoke-test: simulate and verify output is non-empty
+% Quick smoke-test: simulate and verify output is non-empty.
+% In single-output mode the To Workspace data lives on the SimulationOutput
+% object (simOut.x), not in the base workspace — read it from there.
 fprintf('Running smoke-test simulation...\n');
 load_system(out_path);
 simOut = sim(mdl, 'StopTime', '10');
-assert(exist('x', 'var') == 1 && ~isempty(x), ...
-    'Smoke test failed: variable x not written to workspace.');
-fprintf('Smoke test passed — x has %d samples.\n', length(x));
+x = simOut.x;
+assert(~isempty(x), ...
+    'Smoke test failed: signal x was not logged by the To Workspace block.');
+fprintf('Smoke test passed — x has %d samples.\n', numel(x));
 close_system(mdl, 0);

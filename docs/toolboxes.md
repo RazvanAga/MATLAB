@@ -1,12 +1,12 @@
-# Required Toolboxes — demo.slx
+# Required Toolboxes — mbd_demo.slx
 
 ## Hard requirements (demo fails without these)
 
 | Toolbox | Why |
 |---------|-----|
-| **Simulink** (base) | Model simulation, all blocks in `demo.slx` |
+| **Simulink** (base) | Model simulation, all blocks in `mbd_demo.slx` |
 
-`demo.slx` uses only standard Simulink base blocks (Step, Sum, Gain, Integrator, To Workspace, Scope). No additional MathWorks toolboxes are required to simulate it.
+`mbd_demo.slx` uses only standard Simulink base blocks (Step, Sum, Gain, Integrator, To Workspace, Scope). No additional MathWorks toolboxes are required to simulate it.
 
 ## Required for the MCP / agentic layer
 
