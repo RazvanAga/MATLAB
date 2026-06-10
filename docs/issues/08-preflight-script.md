@@ -1,6 +1,6 @@
 # Slice 8 — Pre-flight script
 
-**Type:** AFK · **Blocked by:** #7 (MATLAB live)
+**Type:** AFK · **Recommended model:** Sonnet 4.6 · **Blocked by:** #7 (MATLAB live)
 
 ## Parent
 PRD #1 — Live AI Demo: Chatbot care conduce MATLAB/Simulink prin MCP
@@ -16,7 +16,7 @@ A pre-flight script that reduces live error by checking what it can and starting
 - [ ] Running the script verifies MATLAB shared/reachable, server responsiveness, and figure-folder existence.
 - [ ] The script starts the backend and opens the browser.
 - [ ] If MATLAB is not shared, the script fails loudly with a clear message instead of starting in a broken state.
-- [ ] After implementation, create a commit with a descriptive message summarizing what was achieved.
+- [ ] After implementation, create a git commit with a relevant `-m` message describing what was achieved. **Commit only — do not push.**
 
 ## Blocked by
 - #7 (MATLAB live) — the checks target the real MATLAB/MCP setup.

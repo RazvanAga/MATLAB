@@ -1,6 +1,6 @@
 # Slice 2 — End-to-end skeleton with Mock MCP (tracer bullet)
 
-**Type:** AFK · **Blocked by:** none
+**Type:** AFK · **Recommended model:** Sonnet 4.6 · **Blocked by:** none
 
 ## Parent
 PRD #1 — Live AI Demo: Chatbot care conduce MATLAB/Simulink prin MCP
@@ -24,7 +24,7 @@ Key pieces:
 - [ ] The tool wrapper emits `tool_use start` and `tool_result` events around the MCP call.
 - [ ] Backend tests verify the SSE event sequence against the Mock MCP, without MATLAB and without the real Anthropic API (model stubbed or test-keyed).
 - [ ] No CDN dependency for the UI beyond the Anthropic API itself.
-- [ ] After implementation, create a commit with a descriptive message summarizing what was achieved.
+- [ ] After implementation, create a git commit with a relevant `-m` message describing what was achieved. **Commit only — do not push.**
 
 ## Blocked by
 None — can start immediately.

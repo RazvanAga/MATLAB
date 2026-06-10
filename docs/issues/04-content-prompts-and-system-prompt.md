@@ -1,6 +1,6 @@
 # Slice 4 — Content: scripted prompts + system prompt + tool subset
 
-**Type:** HITL · **Blocked by:** #3 (skeleton)
+**Type:** HITL · **Recommended model:** Opus 4.8 · **Blocked by:** #3 (skeleton)
 
 ## Parent
 PRD #1 — Live AI Demo: Chatbot care conduce MATLAB/Simulink prin MCP
@@ -23,6 +23,7 @@ Author and review the agent-facing content and configuration — the "De definit
 - [ ] The system prompt is written and includes: figure-export instruction, tool-selection guidance, read-only/no-destructive Simulink guardrail, defensive workspace re-derivation, and `check_matlab_code`-before-run instruction.
 - [ ] The restricted tool subset is defined (only the demo tools exposed to the agent).
 - [ ] Content is stored where the backend/UI slices can consume it.
+- [ ] Commit the produced content (prompts, system prompt, tool-subset config) with a relevant `-m` message. **Commit only — do not push.**
 
 ## Blocked by
 - #3 (skeleton) — the harness shape determines how the system prompt and tool subset are wired.

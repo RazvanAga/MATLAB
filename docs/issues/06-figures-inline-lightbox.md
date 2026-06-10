@@ -1,6 +1,6 @@
 # Slice 6 — Figures inline + lightbox
 
-**Type:** AFK · **Blocked by:** #7 (MATLAB live)
+**Type:** AFK · **Recommended model:** Sonnet 4.6 · **Blocked by:** #7 (MATLAB live)
 
 ## Parent
 PRD #1 — Live AI Demo: Chatbot care conduce MATLAB/Simulink prin MCP
@@ -17,7 +17,7 @@ The wow-factor of live figures appearing in the chat (PRD phase F3, supports S3)
 - [ ] Clicking a figure opens a full-screen lightbox.
 - [ ] Only newly-created PNGs are emitted; old figures are not re-shown.
 - [ ] A new figure is emitted exactly once over SSE (covered by a test).
-- [ ] After implementation, create a commit with a descriptive message summarizing what was achieved.
+- [ ] After implementation, create a git commit with a relevant `-m` message describing what was achieved. **Commit only — do not push.**
 
 ## Blocked by
 - #7 (MATLAB live) — real MATLAB must generate figures via the export instruction.

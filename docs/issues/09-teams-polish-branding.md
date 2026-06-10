@@ -1,6 +1,6 @@
 # Slice 9 — Teams-readable polish + branding + error cards
 
-**Type:** AFK · **Blocked by:** #3 (skeleton)
+**Type:** AFK · **Recommended model:** Sonnet 4.6 · **Blocked by:** #3 (skeleton)
 
 ## Parent
 PRD #1 — Live AI Demo: Chatbot care conduce MATLAB/Simulink prin MCP
@@ -20,7 +20,7 @@ Visual polish calibrated for Teams video compression and the agentic-step/explai
 - [ ] Schaeffler logo + green accent + "internal demo tool" line are present and discrete.
 - [ ] Running cards show a spinner; errors render as a red-accented card with traceback under an expand.
 - [ ] Auto-scroll follows the latest card; long code blocks scroll horizontally; fonts are large/high-contrast for Teams.
-- [ ] After implementation, create a commit with a descriptive message summarizing what was achieved.
+- [ ] After implementation, create a git commit with a relevant `-m` message describing what was achieved. **Commit only — do not push.**
 
 ## Blocked by
 - #3 (skeleton) — the UI/timeline to style must exist.

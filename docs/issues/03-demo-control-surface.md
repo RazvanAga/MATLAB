@@ -1,6 +1,6 @@
 # Slice 3 — Demo control surface: prompt buttons + empty state + reset
 
-**Type:** AFK · **Blocked by:** #3 (skeleton)
+**Type:** AFK · **Recommended model:** Sonnet 4.6 · **Blocked by:** #3 (skeleton)
 
 ## Parent
 PRD #1 — Live AI Demo: Chatbot care conduce MATLAB/Simulink prin MCP
@@ -20,7 +20,7 @@ The actual prompt text and extra-safe prompt come from Slice 4; wire the buttons
 - [ ] Buttons remain visible and re-clickable after use; a step can be repeated.
 - [ ] Empty state shows title, buttons, and the context line.
 - [ ] Reset clears the timeline and dispatches `close all; clear` over the tool path.
-- [ ] After implementation, create a commit with a descriptive message summarizing what was achieved.
+- [ ] After implementation, create a git commit with a relevant `-m` message describing what was achieved. **Commit only — do not push.**
 
 ## Blocked by
 - #3 (skeleton) — the timeline/SSE/tool path must exist.
